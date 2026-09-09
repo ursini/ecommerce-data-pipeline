@@ -77,7 +77,7 @@ def validate_order_items(order_items: pd.DataFrame) -> None:
     missing_columns = [
         column
         for column in required_columns
-        if column not in order_items.columns
+        if column not in order_items.columns    
     ]
 
     if missing_columns:
