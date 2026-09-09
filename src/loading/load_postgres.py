@@ -41,3 +41,38 @@ def load_customers(customers: pd.DataFrame) -> None:
 
     finally:
         conn.close()
+
+
+
+def load_orders(orders: pd.DataFrame) -> None:
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            for row in orders.itertuples(index=False):
+                cursor.execute(
+                    """
+                    INSERT INTO ecommerce.stg_orders (
+                        order_id,
+                        customer_id,
+                        order_date,
+                        status
+                    )
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (
+                        row.order_id,
+                        row.customer_id,
+                        row.order_date,
+                        row.status,
+                    ),
+                )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
