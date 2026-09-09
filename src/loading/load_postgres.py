@@ -76,3 +76,6 @@ def load_orders(orders: pd.DataFrame) -> None:
 
     finally:
         conn.close()
+
+
+
