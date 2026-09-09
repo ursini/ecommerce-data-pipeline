@@ -62,4 +62,50 @@ def validate_products(products: pd.DataFrame) -> None:
 
     if products["product_id"].duplicated().any():
         raise ValueError("Duplicate product IDs found")
-    
+
+
+def validate_orders(orders: pd.DataFrame) -> None:
+    required_columns = [
+        "order_id",
+        "customer_id",
+        "order_date",
+        "status",
+    ]
+
+    missing_columns = [
+        column
+        for column in required_columns
+        if column not in orders.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns: {missing_columns}"
+        )
+
+    if orders["order_id"].isna().any():
+        raise ValueError("order_id contains null values")
+
+    if orders["customer_id"].isna().any():
+        raise ValueError("customer_id contains null values")
+
+    if orders["order_date"].isna().any():
+        raise ValueError("order_date contains null values")
+
+    if orders["order_id"].duplicated().any():
+        raise ValueError("Duplicate order IDs found")
+
+    valid_statuses = {
+        "pending",
+        "processing",
+        "shipped",
+        "completed",
+        "cancelled",
+    }
+
+    invalid_statuses = set(orders["status"].dropna()) - valid_statuses
+
+    if invalid_statuses:
+        raise ValueError(
+            f"Invalid order statuses found: {invalid_statuses}"
+        )
