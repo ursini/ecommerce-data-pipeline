@@ -1,0 +1,11 @@
+order_id,customer_id,order_date,status
+1,1,2026-02-01 10:15:00,completed
+2,2,2026-02-02 14:30:00,completed
+3,3,2026-02-03 09:45:00,processing
+4,1,2026-02-04 16:20:00,completed
+5,4,2026-02-05 11:10:00,shipped
+6,5,2026-02-06 13:40:00,completed
+7,2,2026-02-07 15:25:00,cancelled
+8,3,2026-02-08 10:50:00,completed
+9,5,2026-02-09 17:15:00,processing
+10,4,2026-02-10 12:30:00,completed
