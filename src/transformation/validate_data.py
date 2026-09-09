@@ -2,11 +2,7 @@ import pandas as pd
 
 
 def validate_customers(customers: pd.DataFrame) -> None:
-    required_columns = [
-        "customer_id",
-        "customer_name",
-        "email",
-    ]
+    required_columns = ["customer_id", "customer_name", "email"]
 
     missing_columns = [
         column
@@ -15,9 +11,7 @@ def validate_customers(customers: pd.DataFrame) -> None:
     ]
 
     if missing_columns:
-        raise ValueError(
-            f"Missing required columns: {missing_columns}"
-        )
+        raise ValueError(f"Missing required columns: {missing_columns}")
 
     if customers["customer_id"].isna().any():
         raise ValueError("customer_id contains null values")
@@ -27,7 +21,6 @@ def validate_customers(customers: pd.DataFrame) -> None:
 
     if customers["email"].duplicated().any():
         raise ValueError("Duplicate customer emails found")
-
 
 
 def validate_products(products: pd.DataFrame) -> None:
@@ -45,9 +38,7 @@ def validate_products(products: pd.DataFrame) -> None:
     ]
 
     if missing_columns:
-        raise ValueError(
-            f"Missing required columns: {missing_columns}"
-        )
+        raise ValueError(f"Missing required columns: {missing_columns}")
 
     if products["product_id"].isna().any():
         raise ValueError("product_id contains null values")
@@ -65,6 +56,51 @@ def validate_products(products: pd.DataFrame) -> None:
         raise ValueError("Duplicate product IDs found")
 
 
+def validate_orders(orders: pd.DataFrame) -> None:
+    required_columns = [
+        "order_id",
+        "customer_id",
+        "order_date",
+        "status",
+    ]
+
+    missing_columns = [
+        column
+        for column in required_columns
+        if column not in orders.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(f"Missing required columns: {missing_columns}")
+
+    if orders["order_id"].isna().any():
+        raise ValueError("order_id contains null values")
+
+    if orders["customer_id"].isna().any():
+        raise ValueError("customer_id contains null values")
+
+    if orders["order_date"].isna().any():
+        raise ValueError("order_date contains null values")
+
+    if orders["order_id"].duplicated().any():
+        raise ValueError("Duplicate order IDs found")
+
+    valid_statuses = {
+        "pending",
+        "processing",
+        "shipped",
+        "completed",
+        "cancelled",
+    }
+
+    invalid_statuses = set(orders["status"].dropna()) - valid_statuses
+
+    if invalid_statuses:
+        raise ValueError(
+            f"Invalid order statuses found: {invalid_statuses}"
+        )
+
+
 def validate_order_items(order_items: pd.DataFrame) -> None:
     required_columns = [
         "order_item_id",
@@ -77,13 +113,11 @@ def validate_order_items(order_items: pd.DataFrame) -> None:
     missing_columns = [
         column
         for column in required_columns
-        if column not in order_items.columns    
+        if column not in order_items.columns
     ]
 
     if missing_columns:
-        raise ValueError(
-            f"Missing required columns: {missing_columns}"
-        )
+        raise ValueError(f"Missing required columns: {missing_columns}")
 
     if order_items["order_item_id"].isna().any():
         raise ValueError("order_item_id contains null values")
@@ -95,10 +129,14 @@ def validate_order_items(order_items: pd.DataFrame) -> None:
         raise ValueError("product_id contains null values")
 
     if (order_items["quantity"] <= 0).any():
-        raise ValueError("Order item quantities must be greater than zero")
+        raise ValueError(
+            "Order item quantities must be greater than zero"
+        )
 
     if (order_items["unit_price"] < 0).any():
         raise ValueError("Negative unit prices found")
 
     if order_items["order_item_id"].duplicated().any():
         raise ValueError("Duplicate order item IDs found")
+
+    

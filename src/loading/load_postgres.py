@@ -79,3 +79,37 @@ def load_orders(orders: pd.DataFrame) -> None:
 
 
 
+def load_order_items(order_items: pd.DataFrame) -> None:
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            for row in order_items.itertuples(index=False):
+                cursor.execute(
+                    """
+                    INSERT INTO ecommerce.stg_order_items (
+                        order_item_id,
+                        order_id,
+                        product_id,
+                        quantity,
+                        unit_price
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (
+                        row.order_item_id,
+                        row.order_id,
+                        row.product_id,
+                        row.quantity,
+                        row.unit_price,
+                    ),
+                )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
