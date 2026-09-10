@@ -29,47 +29,78 @@ from src.loading.load_postgres import (
     load_products,
     load_orders,
     load_order_items,
+    load_final_tables,
 )
 
-
-data = extract_data()
-
-
-data["customers"] = transform_customers(
-    data["customers"]
-)
-
-data["products"] = transform_products(
-    data["products"]
-)
-
-data["orders"] = transform_orders(
-    data["orders"]
-)
-
-data["order_items"] = transform_order_items(
-    data["order_items"]
-)
+from src.utils.logger import get_logger
 
 
-validate_customers(data["customers"])
-validate_products(data["products"])
-validate_orders(data["orders"])
-validate_order_items(data["order_items"])
-
-validate_relationships(
-    data["customers"],
-    data["products"],
-    data["orders"],
-    data["order_items"],
-)
+logger = get_logger()
 
 
-load_customers(data["customers"])
-load_products(data["products"])
-load_orders(data["orders"])
-load_order_items(data["order_items"])
+def main() -> None:
+    logger.info("Starting ecommerce data pipeline")
+
+    data = extract_data()
+    logger.info("Data extraction completed")
+
+    data["customers"] = transform_customers(
+        data["customers"]
+    )
+
+    data["products"] = transform_products(
+        data["products"]
+    )
+
+    data["orders"] = transform_orders(
+        data["orders"]
+    )
+
+    data["order_items"] = transform_order_items(
+        data["order_items"]
+    )
+
+    logger.info("Data transformation completed")
+
+    validate_customers(data["customers"])
+    validate_products(data["products"])
+    validate_orders(data["orders"])
+    validate_order_items(data["order_items"])
+
+    validate_relationships(
+        data["customers"],
+        data["products"],
+        data["orders"],
+        data["order_items"],
+    )
+
+    logger.info("Data validation completed")
+
+    load_customers(data["customers"])
+    load_products(data["products"])
+    load_orders(data["orders"])
+    load_order_items(data["order_items"])
+
+    logger.info("Staging load completed")
+
+    load_final_tables()
+
+    logger.info("Final warehouse load completed")
+
+    for name, df in data.items():
+        logger.info(
+            "%s: %s rows, %s columns",
+            name,
+            df.shape[0],
+            df.shape[1],
+        )
+
+    logger.info("Ecommerce data pipeline completed successfully")
 
 
-for name, df in data.items():
-    print(f"{name}: {df.shape}")
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        logger.exception("Ecommerce data pipeline failed")
+        raise
