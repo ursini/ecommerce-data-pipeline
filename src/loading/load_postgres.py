@@ -46,6 +46,9 @@ def load_customers(customers: pd.DataFrame) -> None:
 
 
 def load_products(products: pd.DataFrame) -> None:
+    if products.empty:
+        raise ValueError("Products dataframe is empty")
+
     conn = get_connection()
 
     try:
