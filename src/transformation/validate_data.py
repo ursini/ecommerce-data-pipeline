@@ -139,4 +139,33 @@ def validate_order_items(order_items: pd.DataFrame) -> None:
     if order_items["order_item_id"].duplicated().any():
         raise ValueError("Duplicate order item IDs found")
 
-    
+def validate_relationships(
+    customers: pd.DataFrame,
+    products: pd.DataFrame,
+    orders: pd.DataFrame,
+    order_items: pd.DataFrame,
+) -> None:
+    customer_ids = set(customers["customer_id"])
+    product_ids = set(products["product_id"])
+    order_ids = set(orders["order_id"])
+
+    invalid_order_customers = set(orders["customer_id"]) - customer_ids
+
+    if invalid_order_customers:
+        raise ValueError(
+            f"Orders reference unknown customers: {invalid_order_customers}"
+        )
+
+    invalid_item_orders = set(order_items["order_id"]) - order_ids
+
+    if invalid_item_orders:
+        raise ValueError(
+            f"Order items reference unknown orders: {invalid_item_orders}"
+        )
+
+    invalid_item_products = set(order_items["product_id"]) - product_ids
+
+    if invalid_item_products:
+        raise ValueError(
+            f"Order items reference unknown products: {invalid_item_products}"
+        )
