@@ -8,6 +8,7 @@ def load_customers(customers: pd.DataFrame) -> None:
 
     try:
         with conn.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE ecommerce.stg_products")
             for row in customers.itertuples(index=False):
                 cursor.execute(
                     """
@@ -48,6 +49,8 @@ def load_products(products: pd.DataFrame) -> None:
 
     try:
         with conn.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE ecommerce.stg_products")
+
             for row in products.itertuples(index=False):
                 cursor.execute(
                     """
@@ -86,6 +89,8 @@ def load_orders(orders: pd.DataFrame) -> None:
 
     try:
         with conn.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE ecommerce.stg_customers")
+
             for row in orders.itertuples(index=False):
                 cursor.execute(
                     """
@@ -120,6 +125,7 @@ def load_order_items(order_items: pd.DataFrame) -> None:
 
     try:
         with conn.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE ecommerce.stg_products")
             for row in order_items.itertuples(index=False):
                 cursor.execute(
                     """
