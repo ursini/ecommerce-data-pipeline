@@ -12,6 +12,7 @@ from src.transformation.validate_data import (
 from src.transformation.transform_data import (
     transform_products,
     transform_orders,
+    transform_order_items,
 )
 
 
@@ -361,3 +362,32 @@ def test_transform_orders_normalizes_status():
     result = transform_orders(orders)
 
     assert result.loc[0, "status"] == "completed"
+
+
+def test_transform_order_items_converts_numeric_types():
+    order_items = pd.DataFrame({
+        "order_item_id": [1],
+        "order_id": [1],
+        "product_id": [1],
+        "quantity": ["2"],
+        "unit_price": ["120.50"],
+    })
+
+    result = transform_order_items(order_items)
+
+    assert pd.api.types.is_numeric_dtype(result["quantity"])
+    assert pd.api.types.is_numeric_dtype(result["unit_price"])
+
+
+def test_transform_order_items_removes_invalid_rows():
+    order_items = pd.DataFrame({
+        "order_item_id": [1, 2],
+        "order_id": [1, 2],
+        "product_id": [1, 2],
+        "quantity": ["2", None],
+        "unit_price": ["120.50", "350.00"],
+    })
+
+    result = transform_order_items(order_items)
+
+    assert len(result) == 1

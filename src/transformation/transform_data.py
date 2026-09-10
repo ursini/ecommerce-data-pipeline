@@ -80,3 +80,29 @@ def transform_orders(orders: pd.DataFrame) -> pd.DataFrame:
     )
 
     return orders
+
+
+def transform_order_items(order_items: pd.DataFrame) -> pd.DataFrame:
+    order_items = order_items.copy()
+
+    order_items["quantity"] = pd.to_numeric(
+        order_items["quantity"],
+        errors="coerce",
+    )
+
+    order_items["unit_price"] = pd.to_numeric(
+        order_items["unit_price"],
+        errors="coerce",
+    )
+
+    order_items = order_items.dropna(
+        subset=[
+            "order_item_id",
+            "order_id",
+            "product_id",
+            "quantity",
+            "unit_price",
+        ]
+    )
+
+    return order_items
