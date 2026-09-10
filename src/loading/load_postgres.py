@@ -43,6 +43,43 @@ def load_customers(customers: pd.DataFrame) -> None:
         conn.close()
 
 
+def load_products(products: pd.DataFrame) -> None:
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            for row in products.itertuples(index=False):
+                cursor.execute(
+                    """
+                    INSERT INTO ecommerce.stg_products (
+                        product_id,
+                        product_name,
+                        category,
+                        price,
+                        stock_quantity,
+                        created_at
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        row.product_id,
+                        row.product_name,
+                        row.category,
+                        row.price,
+                        row.stock_quantity,
+                        row.created_at,
+                    ),
+                )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 
 def load_orders(orders: pd.DataFrame) -> None:
     conn = get_connection()
@@ -76,7 +113,6 @@ def load_orders(orders: pd.DataFrame) -> None:
 
     finally:
         conn.close()
-
 
 
 def load_order_items(order_items: pd.DataFrame) -> None:
@@ -113,3 +149,4 @@ def load_order_items(order_items: pd.DataFrame) -> None:
 
     finally:
         conn.close()
+        
