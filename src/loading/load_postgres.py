@@ -1,6 +1,11 @@
+from pathlib import Path
+
 import pandas as pd
 
 from src.utils.database import get_connection
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 def load_customers(customers: pd.DataFrame) -> None:
@@ -168,6 +173,37 @@ def load_order_items(order_items: pd.DataFrame) -> None:
                         row.unit_price,
                     ),
                 )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+def load_final_tables() -> None:
+    sql_file = (
+        BASE_DIR
+        / "sql"
+        / "warehouse"
+        / "02_load_final_tables.sql"
+    )
+
+    if not sql_file.exists():
+        raise FileNotFoundError(
+            f"SQL file not found: {sql_file}"
+        )
+
+    sql = sql_file.read_text(encoding="utf-8")
+
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql)
 
         conn.commit()
 
