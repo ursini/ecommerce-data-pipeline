@@ -10,7 +10,10 @@ def transform_customers(customers: pd.DataFrame) -> pd.DataFrame:
     customers["state"] = customers["state"].str.strip()
     customers["country"] = customers["country"].str.strip()
 
-    customers["created_at"] = pd.to_datetime(customers["created_at"])
+    customers["created_at"] = pd.to_datetime(
+        customers["created_at"],
+        errors="coerce",
+    )
 
     customers = customers.dropna(
         subset=["customer_id", "customer_name", "email"]
@@ -18,7 +21,7 @@ def transform_customers(customers: pd.DataFrame) -> pd.DataFrame:
 
     customers = customers.drop_duplicates(
         subset=["email"],
-        keep="first"
+        keep="first",
     )
 
     return customers
@@ -32,21 +35,48 @@ def transform_products(products: pd.DataFrame) -> pd.DataFrame:
 
     products["price"] = pd.to_numeric(
         products["price"],
-        errors="coerce"
+        errors="coerce",
     )
 
     products["stock_quantity"] = pd.to_numeric(
         products["stock_quantity"],
-        errors="coerce"
+        errors="coerce",
     )
 
     products["created_at"] = pd.to_datetime(
         products["created_at"],
-        errors="coerce"
+        errors="coerce",
     )
 
     products = products.dropna(
-        subset=["product_id", "product_name", "price", "stock_quantity"]
+        subset=[
+            "product_id",
+            "product_name",
+            "price",
+            "stock_quantity",
+        ]
     )
 
     return products
+
+
+def transform_orders(orders: pd.DataFrame) -> pd.DataFrame:
+    orders = orders.copy()
+
+    orders["order_date"] = pd.to_datetime(
+        orders["order_date"],
+        errors="coerce",
+    )
+
+    orders["status"] = orders["status"].str.strip().str.lower()
+
+    orders = orders.dropna(
+        subset=[
+            "order_id",
+            "customer_id",
+            "order_date",
+            "status",
+        ]
+    )
+
+    return orders
