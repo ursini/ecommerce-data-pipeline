@@ -105,4 +105,8 @@ def transform_order_items(order_items: pd.DataFrame) -> pd.DataFrame:
         ]
     )
 
+    order_items["item_total"] = (
+        order_items["quantity"] * order_items["unit_price"]
+    )
+
     return order_items
