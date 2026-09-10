@@ -9,6 +9,11 @@ from src.transformation.validate_data import (
     validate_relationships,
 )
 
+from src.transformation.transform_data import (
+    transform_products,
+    transform_orders,
+)
+
 
 def test_validate_customers_accepts_valid_data():
     customers = pd.DataFrame({
@@ -29,7 +34,7 @@ def test_validate_customers_rejects_missing_customer_id():
 
     with pytest.raises(
         ValueError,
-        match="customer_id contains null values"
+        match="customer_id contains null values",
     ):
         validate_customers(customers)
 
@@ -43,7 +48,7 @@ def test_validate_customers_rejects_duplicate_emails():
 
     with pytest.raises(
         ValueError,
-        match="Duplicate customer emails found"
+        match="Duplicate customer emails found",
     ):
         validate_customers(customers)
 
@@ -69,7 +74,7 @@ def test_validate_products_rejects_negative_price():
 
     with pytest.raises(
         ValueError,
-        match="Negative product prices found"
+        match="Negative product prices found",
     ):
         validate_products(products)
 
@@ -84,7 +89,7 @@ def test_validate_products_rejects_negative_stock():
 
     with pytest.raises(
         ValueError,
-        match="Negative stock quantities found"
+        match="Negative stock quantities found",
     ):
         validate_products(products)
 
@@ -113,7 +118,7 @@ def test_validate_orders_rejects_missing_customer_id():
 
     with pytest.raises(
         ValueError,
-        match="customer_id contains null values"
+        match="customer_id contains null values",
     ):
         validate_orders(orders)
 
@@ -128,7 +133,7 @@ def test_validate_orders_rejects_invalid_status():
 
     with pytest.raises(
         ValueError,
-        match="Invalid order statuses found"
+        match="Invalid order statuses found",
     ):
         validate_orders(orders)
 
@@ -156,7 +161,7 @@ def test_validate_order_items_rejects_invalid_quantity():
 
     with pytest.raises(
         ValueError,
-        match="Order item quantities must be greater than zero"
+        match="Order item quantities must be greater than zero",
     ):
         validate_order_items(order_items)
 
@@ -172,7 +177,7 @@ def test_validate_order_items_rejects_negative_unit_price():
 
     with pytest.raises(
         ValueError,
-        match="Negative unit prices found"
+        match="Negative unit prices found",
     ):
         validate_order_items(order_items)
 
@@ -296,3 +301,63 @@ def test_validate_relationships_rejects_unknown_product():
             order_items,
         )
 
+
+def test_transform_products_cleans_text():
+    products = pd.DataFrame({
+        "product_id": [1],
+        "product_name": [" Notebook "],
+        "category": [" Eletronicos "],
+        "price": ["4500.00"],
+        "stock_quantity": ["25"],
+        "created_at": ["2026-01-03 09:00:00"],
+    })
+
+    result = transform_products(products)
+
+    assert result.loc[0, "product_name"] == "Notebook"
+    assert result.loc[0, "category"] == "Eletronicos"
+
+
+def test_transform_products_converts_types():
+    products = pd.DataFrame({
+        "product_id": [1],
+        "product_name": ["Notebook"],
+        "category": ["Eletronicos"],
+        "price": ["4500.00"],
+        "stock_quantity": ["25"],
+        "created_at": ["2026-01-03 09:00:00"],
+    })
+
+    result = transform_products(products)
+
+    assert pd.api.types.is_numeric_dtype(result["price"])
+    assert pd.api.types.is_numeric_dtype(result["stock_quantity"])
+    assert pd.api.types.is_datetime64_any_dtype(result["created_at"])
+
+
+def test_transform_orders_converts_order_date():
+    orders = pd.DataFrame({
+        "order_id": [1],
+        "customer_id": [1],
+        "order_date": ["2026-02-01 10:15:00"],
+        "status": ["COMPLETED"],
+    })
+
+    result = transform_orders(orders)
+
+    assert pd.api.types.is_datetime64_any_dtype(
+        result["order_date"]
+    )
+
+
+def test_transform_orders_normalizes_status():
+    orders = pd.DataFrame({
+        "order_id": [1],
+        "customer_id": [1],
+        "order_date": ["2026-02-01 10:15:00"],
+        "status": [" COMPLETED "],
+    })
+
+    result = transform_orders(orders)
+
+    assert result.loc[0, "status"] == "completed"
