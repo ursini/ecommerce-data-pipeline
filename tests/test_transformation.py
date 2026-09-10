@@ -391,3 +391,31 @@ def test_transform_order_items_removes_invalid_rows():
     result = transform_order_items(order_items)
 
     assert len(result) == 1
+
+
+def test_transform_order_items_calculates_item_total():
+    order_items = pd.DataFrame({
+        "order_item_id": [1],
+        "order_id": [1],
+        "product_id": [1],
+        "quantity": [2],
+        "unit_price": [120.50],
+    })
+
+    result = transform_order_items(order_items)
+
+    assert result.loc[0, "item_total"] == 241.00
+
+
+def test_transform_order_items_calculates_multiple_item_totals():
+    order_items = pd.DataFrame({
+        "order_item_id": [1, 2],
+        "order_id": [1, 2],
+        "product_id": [1, 2],
+        "quantity": [2, 3],
+        "unit_price": [120.50, 350.00],
+    })
+
+    result = transform_order_items(order_items)
+
+    assert result["item_total"].tolist() == [241.00, 1050.00]
