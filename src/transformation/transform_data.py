@@ -16,7 +16,12 @@ def transform_customers(customers: pd.DataFrame) -> pd.DataFrame:
     )
 
     customers = customers.dropna(
-        subset=["customer_id", "customer_name", "email"]
+        subset=[
+            "customer_id",
+            "customer_name",
+            "email",
+            "created_at",
+        ]
     )
 
     customers = customers.drop_duplicates(
