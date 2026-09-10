@@ -295,3 +295,4 @@ def test_validate_relationships_rejects_unknown_product():
             orders,
             order_items,
         )
+
