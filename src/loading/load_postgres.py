@@ -89,6 +89,9 @@ def load_products(products: pd.DataFrame) -> None:
 
 
 def load_orders(orders: pd.DataFrame) -> None:
+    if orders.empty:
+        raise ValueError("Orders dataframe is empty")
+
     conn = get_connection()
 
     try:
