@@ -41,51 +41,85 @@ logger = get_logger()
 def main() -> None:
     logger.info("Starting ecommerce data pipeline")
 
-    data = extract_data()
-    logger.info("Data extraction completed")
+    try:
+        logger.info("Starting data extraction")
+        data = extract_data()
+        logger.info("Data extraction completed")
 
-    data["customers"] = transform_customers(
-        data["customers"]
-    )
+    except Exception:
+        logger.exception("Pipeline failed during data extraction")
+        raise
 
-    data["products"] = transform_products(
-        data["products"]
-    )
+    try:
+        logger.info("Starting data transformation")
 
-    data["orders"] = transform_orders(
-        data["orders"]
-    )
+        data["customers"] = transform_customers(
+            data["customers"]
+        )
 
-    data["order_items"] = transform_order_items(
-        data["order_items"]
-    )
+        data["products"] = transform_products(
+            data["products"]
+        )
 
-    logger.info("Data transformation completed")
+        data["orders"] = transform_orders(
+            data["orders"]
+        )
 
-    validate_customers(data["customers"])
-    validate_products(data["products"])
-    validate_orders(data["orders"])
-    validate_order_items(data["order_items"])
+        data["order_items"] = transform_order_items(
+            data["order_items"]
+        )
 
-    validate_relationships(
-        data["customers"],
-        data["products"],
-        data["orders"],
-        data["order_items"],
-    )
+        logger.info("Data transformation completed")
 
-    logger.info("Data validation completed")
+    except Exception:
+        logger.exception("Pipeline failed during data transformation")
+        raise
 
-    load_customers(data["customers"])
-    load_products(data["products"])
-    load_orders(data["orders"])
-    load_order_items(data["order_items"])
+    try:
+        logger.info("Starting data validation")
 
-    logger.info("Staging load completed")
+        validate_customers(data["customers"])
+        validate_products(data["products"])
+        validate_orders(data["orders"])
+        validate_order_items(data["order_items"])
 
-    load_final_tables()
+        validate_relationships(
+            data["customers"],
+            data["products"],
+            data["orders"],
+            data["order_items"],
+        )
 
-    logger.info("Final warehouse load completed")
+        logger.info("Data validation completed")
+
+    except Exception:
+        logger.exception("Pipeline failed during data validation")
+        raise
+
+    try:
+        logger.info("Starting staging load")
+
+        load_customers(data["customers"])
+        load_products(data["products"])
+        load_orders(data["orders"])
+        load_order_items(data["order_items"])
+
+        logger.info("Staging load completed")
+
+    except Exception:
+        logger.exception("Pipeline failed during staging load")
+        raise
+
+    try:
+        logger.info("Starting final warehouse load")
+
+        load_final_tables()
+
+        logger.info("Final warehouse load completed")
+
+    except Exception:
+        logger.exception("Pipeline failed during final warehouse load")
+        raise
 
     for name, df in data.items():
         logger.info(
@@ -102,5 +136,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        logger.exception("Ecommerce data pipeline failed")
+        logger.exception("Ecommerce data pipeline terminated with an error")
         raise
