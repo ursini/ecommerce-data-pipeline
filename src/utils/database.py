@@ -1,21 +1,20 @@
 import os
-from pathlib import Path
 
-import psycopg
+import psycopg2
 from dotenv import load_dotenv
 
 
-BASE_DIR = Path(__file__).resolve().parents[2]
-ENV_FILE = BASE_DIR / ".env"
-
-load_dotenv(ENV_FILE)
+load_dotenv()
 
 
 def get_connection():
-    return psycopg.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-    )
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError(
+            "DATABASE_URL environment variable is not configured"
+        )
+
+    database_url = database_url.strip()
+
+    return psycopg2.connect(database_url)
