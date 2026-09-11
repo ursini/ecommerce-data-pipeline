@@ -1,20 +1,9 @@
-import os
-
 import psycopg2
-from dotenv import load_dotenv
 
-
-load_dotenv()
+from src.config import DATABASE_URL, validate_config
 
 
 def get_connection():
-    database_url = os.getenv("DATABASE_URL")
+    validate_config()
 
-    if not database_url:
-        raise RuntimeError(
-            "DATABASE_URL environment variable is not configured"
-        )
-
-    database_url = database_url.strip()
-
-    return psycopg2.connect(database_url)
+    return psycopg2.connect(DATABASE_URL)
