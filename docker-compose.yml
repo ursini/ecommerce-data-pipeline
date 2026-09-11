@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ecommerce_postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/ddl/01_create_schema.sql:/docker-entrypoint-initdb.d/01_create_schema.sql:ro
+      - ./sql/ddl/02_create_tables.sql:/docker-entrypoint-initdb.d/02_create_tables.sql:ro
+      - ./sql/ddl/03_create_indexes.sql:/docker-entrypoint-initdb.d/03_create_indexes.sql:ro
+      - ./sql/staging/01_stg_customers.sql:/docker-entrypoint-initdb.d/04_stg_customers.sql:ro
+      - ./sql/staging/02_stg_products.sql:/docker-entrypoint-initdb.d/05_stg_products.sql:ro
+      - ./sql/staging/03_stg_orders.sql:/docker-entrypoint-initdb.d/06_stg_orders.sql:ro
+      - ./sql/staging/04_stg_order_items.sql:/docker-entrypoint-initdb.d/07_stg_order_items.sql:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: ecommerce_pipeline
+
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
