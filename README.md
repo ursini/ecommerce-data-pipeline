@@ -1,3 +1,5 @@
+[![Continuous Integration](https://github.com/ursini/ecommerce-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/ursini/ecommerce-data-pipeline/actions/workflows/ci.yml)
+
 # E-commerce Data Pipeline
 
 End-to-end data engineering pipeline for processing e-commerce data, applying transformations and data quality validations, loading data into PostgreSQL, generating analytical datasets, and orchestrating the workflow with Apache Airflow.
