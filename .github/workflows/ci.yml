@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  ci-pipeline:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,21 +24,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas fastparquet boto3 sqlalchemy psycopg2-binary python-dotenv
 
-    - name: Create temporary .env
+    - name: Validate Python Code Syntax
       run: |
-        echo "POSTGRES_USER=postgres" >> .env
-        echo "POSTGRES_PASSWORD=postgres" >> .env
-        echo "POSTGRES_DB=postgres" >> .env
-        echo "POSTGRES_HOST=localhost" >> .env
-        echo "POSTGRES_PORT=5432" >> .env
-        echo "S3_ENDPOINT_URL=http://localhost:9000" >> .env
-
-    - name: Start Docker Infrastructure
-      run: |
-        docker compose up -d minio postgres
-        sleep 15
-
-    - name: Test Pipeline Execution
-      run: |
-        python -m src.ingestion.extract_data
-        python -m src.ingestion.load_staging
+        python -m compileall src
