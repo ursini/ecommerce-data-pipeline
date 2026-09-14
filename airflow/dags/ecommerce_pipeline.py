@@ -1,70 +1,42 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.operators.bash import BashOperator
 
-from airflow.sdk import DAG
-from airflow.providers.standard.operators.python import PythonOperator
-
-from src.ingestion.extract_data import extract_data
-
-from src.transformation.transform_data import (
-    transform_customers,
-    transform_products,
-    transform_orders,
-    transform_order_items,
-)
-
-from src.transformation.validate_data import (
-    validate_customers,
-    validate_products,
-    validate_orders,
-    validate_order_items,
-    validate_relationships,
-)
-
-from src.loading.load_postgres import (
-    load_customers,
-    load_products,
-    load_orders,
-    load_order_items,
-    load_final_tables,
-)
-
-
-def run_pipeline():
-    data = extract_data()
-
-    data["customers"] = transform_customers(data["customers"])
-    data["products"] = transform_products(data["products"])
-    data["orders"] = transform_orders(data["orders"])
-    data["order_items"] = transform_order_items(data["order_items"])
-
-    validate_customers(data["customers"])
-    validate_products(data["products"])
-    validate_orders(data["orders"])
-    validate_order_items(data["order_items"])
-
-    validate_relationships(
-        data["customers"],
-        data["products"],
-        data["orders"],
-        data["order_items"],
-    )
-
-    load_customers(data["customers"])
-    load_products(data["products"])
-    load_orders(data["orders"])
-    load_order_items(data["order_items"])
-    load_final_tables()
-
+default_args = {
+    "owner": "data_engineers",
+    "depends_on_past": False,
+    "start_date": datetime(2026, 1, 1),
+    "email_on_failure": False,
+    "retries": 1,
+    "retry_delay": timedelta(minutes=2),
+}
 
 with DAG(
-    dag_id="ecommerce_data_pipeline",
-    start_date=datetime(2026, 1, 1),
-    schedule=None,
+    dag_id="ecommerce_pipeline",
+    default_args=default_args,
+    description="Pipeline E2E: Lake Bronze -> Postgres Staging -> Postgres Analytics",
+    schedule_interval="@daily",
     catchup=False,
-    tags=["ecommerce", "etl"],
+    tags=["ecommerce", "lake", "analytics"],
 ) as dag:
 
-    run_pipeline_task = PythonOperator(
-        task_id="run_ecommerce_pipeline",
-        python_callable=run_pipeline,
+    # 1. Extração dos dados para o MinIO (Bronze Layer)
+    extract_bronze = BashOperator(
+        task_id="extract_to_bronze_lake",
+        bash_command="python -m src.ingestion.extract_data",
     )
+
+    # 2. Carga do MinIO para a Staging no PostgreSQL
+    load_staging = BashOperator(
+        task_id="load_to_staging_postgres",
+        bash_command="python -m src.ingestion.load_staging",
+    )
+
+    # 3. Transformação dimensional para a Camada Analytics
+    transform_analytics = BashOperator(
+        task_id="transform_to_analytics_postgres",
+        bash_command="python -m src.transformation.transform_analytics",
+    )
+
+    # Dependência sequencial
+    extract_bronze >> load_staging >> transform_analytics
