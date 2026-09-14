@@ -62,6 +62,16 @@ The entire platform is containerized with Docker and Docker Compose, features co
 
 ---
 
+## Pipeline Execution & Analytics
+
+### Orchestrated Workflow (Apache Airflow)
+![Airflow Pipeline](docs/images/airflow_dag.png)
+
+### Executive BI Dashboard (Metabase)
+![Metabase Dashboard](docs/images/metabase_dashboard.png)
+
+---
+
 ## Tech Stack
 
 - **Language:** Python 3.12+
@@ -98,6 +108,11 @@ ecommerce_data_pipeline/
 │       ├── products.csv
 │       ├── orders.csv
 │       └── order_items.csv
+│
+├── docs/
+│   └── images/
+│       ├── airflow_dag.png
+│       └── metabase_dashboard.png
 │
 ├── sql/
 │   ├── ddl/
@@ -192,65 +207,4 @@ extract_to_bronze_lake >> load_to_staging_postgres >> transform_to_analytics_pos
 
 ### 1. Clone the Repository & Configure Environment
 ```bash
-git clone [https://github.com/ursini/ecommerce-data-pipeline.git](https://github.com/ursini/ecommerce-data-pipeline.git)
-cd ecommerce_data_pipeline
-
-# Create your local .env file
-cp .env.example .env
-```
-
-### 2. Run with Docker Compose
-Start the complete infrastructure (PostgreSQL, MinIO, Airflow stack, Metabase):
-
-```bash
-docker compose up -d --build
-```
-
-Verify that all services are healthy:
-```bash
-docker compose ps
-```
-
-### 3. Access Service Consoles
-
-| Service | Local URL | Default Credentials |
-| :--- | :--- | :--- |
-| **Apache Airflow** | `http://localhost:8080` | `admin` / `admin` |
-| **Metabase BI** | `http://localhost:3000` | Initial setup on first visit |
-| **MinIO Console** | `http://localhost:9001` | `minioadmin` / `minioadminpassword` |
-| **PostgreSQL** | `localhost:5432` | `postgres` / (as defined in `.env`) |
-
-### 4. Run Tests & Validation Locally
-To run unit and pipeline integration tests locally:
-
-```bash
-python -m pytest
-```
-
-To run the Data Quality checks manually against the running database:
-```bash
-python -m src.quality.test_quality
-```
-
----
-
-## Current Status
-
-- [x] Raw data extraction & Parquet ingestion (Bronze Lake)
-- [x] PostgreSQL Staging ingestion with schema constraints
-- [x] Dimensional modeling (Gold Star Schema: `dim_customers`, `dim_products`, `fct_sales`)
-- [x] Automated Data Quality Gate (`test_quality.py`)
-- [x] End-to-end workflow orchestration via Apache Airflow DAG
-- [x] Self-hosted Metabase BI dashboard container
-- [x] Automated CI pipeline via GitHub Actions
-- [x] Centralized logging and explicit exception handling
-- [x] Automated test suite with Pytest
-
----
-
-## Future Improvements
-
-- Migrate analytical SQL transformations to **dbt Core** for lineage and built-in testing.
-- Implement incremental data loading (CDC or watermarking) for large transaction volumes.
-- Cloud deployment configuration (AWS S3 + RDS / EKS).
-- Slack / Email alert integration on DAG task failures.
+git clone [https://github.com/ursini/ecommerce-data-pipeline](https://github.com/ursini/ecommerce-data-pipeline).
