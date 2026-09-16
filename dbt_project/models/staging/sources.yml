@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: ecommerce_raw
+    schema: ecommerce
+    tables:
+      - name: stg_customers
+      - name: stg_products
+      - name: stg_orders
+      - name: stg_order_items

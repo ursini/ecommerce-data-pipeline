@@ -1,0 +1,12 @@
+ecommerce_profile:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: postgres
+      password: Leomae2008
+      dbname: postgres
+      schema: analytics
+      threads: 4
